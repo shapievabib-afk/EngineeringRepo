@@ -45,7 +45,15 @@ if __name__ == "__main__":
             try:
                 voltage = float(input("Введите напряжение в Вольтах: "))
 
-                voltage_to_number(voltage)
+                if not (0.0<= voltage <= dynamic_range):
+                    print("Напряжение недопустимо, иди гуляй")
+                    print("Устанавливаем напряжение 0.0 В")
+                    voltage = 0.0
+                    number = 0
+                
+                else:
+                    number = int((voltage/3.183) *255)
+                
 
                 dac.set_voltage(voltage)
                 number = int((voltage/3.183) *255)
