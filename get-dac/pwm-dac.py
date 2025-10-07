@@ -23,8 +23,8 @@ class PWM_DAC:
             print(f"PWM DAC инициализирован на пине {pwm_pin}, частота {pwm_frequency} Гц")
 
     def deinit(self):
-        if self.pwm:
-            self.pwm.stop()
+        #if self.pwm:
+        self.pwm.stop()
         GPIO.cleanup()
 
     def set_voltage(self, voltage):
