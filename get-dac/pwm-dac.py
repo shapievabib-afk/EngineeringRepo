@@ -1,5 +1,5 @@
 import RPi.GPIO as GPIO
-import time
+
 
 GPIO.setmode(GPIO.BCM)
 bits = [16, 20, 21, 25, 26, 17, 27, 22]
@@ -14,11 +14,10 @@ class PWM_DAC:
         self.verbose = verbose
         self.pwm_frequency = pwm_frequency
         self.pwm = None
-        
-        # Настраиваем ШИМ на указанном пине
+    
         GPIO.setup(self.pwm_pin, GPIO.OUT)
         self.pwm = GPIO.PWM(self.pwm_pin, self.pwm_frequency)
-        self.pwm.start(0)  # Запускаем ШИМ с 0% заполнения
+        self.pwm.start(0) 
         
         if self.verbose:
             print(f"PWM DAC инициализирован на пине {pwm_pin}, частота {pwm_frequency} Гц")
@@ -32,8 +31,7 @@ class PWM_DAC:
         if not (0.0 <= voltage <= self.dynamic_range):
             print("Напряжение недопустимо")
             voltage = max(0, min(voltage, self.dynamic_range))
-        
-        # Конвертируем напряжение в коэффициент заполнения ШИМ (0-100%)
+    
         duty_cycle = (voltage / self.dynamic_range) * 100
         self.pwm.ChangeDutyCycle(duty_cycle)
         
@@ -45,15 +43,13 @@ def dec2bin(number):
 
 if __name__ == "__main__":
     try:
-        # Используем один из пинов из списка bits для ШИМ
-        dac = PWM_DAC(pwm_pin=21, pwm_frequency=500, dynamic_range=3.3, verbose=True)
+        dac = PWM_DAC(pwm_pin=12, pwm_frequency=500, dynamic_range=3.3, verbose=True)
 
         while True:
             try:
                 voltage = float(input("Введите напряжение в Вольтах (0-3.3): "))
                 dac.set_voltage(voltage)
                 
-                # Для параллельного ЦАП (если хотите использовать оба варианта)
                 number = int((voltage / 3.3) * 255)
                 binary_number = dec2bin(number)
                 GPIO.output(bits, binary_number)
