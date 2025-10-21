@@ -7,8 +7,10 @@ class R2R_ADC:
         self.verbose = verbose
         self.compare_time = compare_time
         self.voltage = 0.0
-        self.max_dac_value = 0.0
+        self.max_dac_value = 255
         self.value = 0
+        self.max_dac_number = 0
+        
 
         self.bits_gpio = [26, 20, 19, 16, 13, 12, 25, 11]
         self.comp_gpio = 21
@@ -21,10 +23,11 @@ class R2R_ADC:
         GPIO.output(self.bits_gpio, 0)
         GPIO.cleanup()
 
-    def dec2bin(value):
+    def dec2bin(self, value):
         return [int(element) for element in bin(value)[2:].zfill(8)]
 
     def number_to_dac(self, number):
+        #binary_value = self.dec2bin(number)
         GPIO.output(self.bits_gpio, number)
         #может стоить просто применить что-то вроде self.number = number как в r2r_dac но добавить выход для ацп
 
@@ -33,36 +36,42 @@ class R2R_ADC:
      #   self.voltage = int(bin(value))
 
     def sequential_counting_adc(self): ## Данная реализация нуждает в проверке, сделано на веру хехе
-        max_dac_number = (1<<self.dac.bits) - 1
+        self.max_dac_number = self.max_dac_value
 
-        for value in range (R2R_ADC.max_dac_value + 1):
-            self.dac.set_value(value)
+        for value in range (self.max_dac_number + 1):
+            self.number_to_dac(value)
+            GOIDA.sleep(self.compare_time)
+            comparator_output = GPIO.input(self.comp_gpio)
 
-            GOIDA.compare_time = R2R_ADC.compare_time
-            bits_gpio_output = self.bits_gpio.read()
+            if self.verbose:
+                print(f"Значение: {value}, Comparator: {comparator_output}")
 
-            if bits_gpio_output == 1:
+            if comparator_output == 1:
+                self.value = value
                 return value
-            
-        return max_dac_number
+
+        self.value = self.max_dac_number
+        return self.max_dac_number
 
     def get_sc_voltage(self):
-        self.number = int(R2R_ADC.value)
-
-        return self.number
+        voltage = (self.value / self.max_dac_value) * self.dynamic_range
+        return voltage
 
 if __name__ == "__main__":
     try:
-        dac = R2R_ADC(R2R_ADC.bits_gpio, 3.183, 0.01, True)
+        adc = R2R_ADC()
 
         while True:
             try:
-                R2R_ADC.sequential_counting_adc
-                print(f"Значение: {R2R_ADC.self.number}")
-                
+                value = adc.sequential_counting_adc()
+                voltage = adc.get_sc_voltage()
+                print(f"Значение: {value}")
+                print(f"Напряжение: {voltage:.2f} В")
 
+                GOIDA.sleep(0.5)
             except ValueError:
-                print("Вы ввели не число. Попробуйте еще раз\n")
+                print("ОШИБКААААААААААААААААА")
+                break
 
     finally:
-        dac.deinit()
+        adc.deinit()
