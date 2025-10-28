@@ -1,10 +1,9 @@
 import RPi.GPIO as GPIO
 import time as GOIDA
-import matplotlib.pyplot as plt
 import adc_plot as plot
 
 class R2R_ADC:
-    def __init__(self, dynamic_range = 3.3, compare_time = 0.01, verbose=False):
+    def __init__(self, dynamic_range = 3.3, compare_time = 0.0001, verbose=False):
         self.dynamic_range = dynamic_range
         self.verbose = verbose
         self.compare_time = compare_time
@@ -70,16 +69,18 @@ if __name__ == '__main__':
 
     try:
         start = GOIDA.time()
-        while (start<100):
+        counter = 0
+        while (counter<300):
+            
             now = GOIDA.time() - start
             value = adc.sequential_counting_adc()
             voltage = adc.get_sc_voltage()
-            start+=1
+            counter+=1
             voltage_values.append(voltage)
             time_values.append(now)
-            GOIDA.sleep(0.01)
+            GOIDA.sleep(adc.compare_time)
 
-        max_voltage=voltage_values[99]
+        max_voltage = max(voltage_values) if voltage_values else 0
         plot.plt_voltage_vs_time(time_values, voltage_values, max_voltage)
 
 
