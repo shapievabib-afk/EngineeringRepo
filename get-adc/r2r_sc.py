@@ -59,8 +59,8 @@ class R2R_ADC:
         voltage = (self.value / self.max_dac_value) * self.dynamic_range
         return voltage
 
-voltage_values = [R2R_ADC(voltage) for voltage in []]
-time_values = [R2R_ADC(time) for time in []]
+voltage_values = []
+time_values = []
 duration = 0.3
 
 if __name__ == '__main__':
@@ -69,12 +69,15 @@ if __name__ == '__main__':
 
 
     try:
-        start = 0
-        GOIDA.start = start
+        start = GOIDA.time()
         while (start<100):
-            voltage_values[start] = R2R_ADC.voltage
-            time_values[start] = R2R_ADC.timer
+            now = GOIDA.time() - start
+            value = adc.sequential_counting_adc()
+            voltage = adc.get_sc_voltage()
             start+=1
+            voltage_values.append(voltage)
+            time_values.append(now)
+            GOIDA.sleep(0.01)
 
         max_voltage=voltage_values[99]
         plot.plt_voltage_vs_time(time_values, voltage_values, max_voltage)
@@ -84,6 +87,7 @@ if __name__ == '__main__':
     finally:
             adc.deinit()
         
-        #need to fix
+        #need to fix... still
+
 
 
